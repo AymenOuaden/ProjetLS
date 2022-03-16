@@ -1,3 +1,5 @@
+(*Islem  *)
+(* 1.1 Les expressions arithmétiques : Doing*)
 
 (* Q1 *)
 type aexp =
@@ -68,6 +70,65 @@ let result = ainterp aexp8 varList ;;
 print_string("expresion8 = "^aexp_to_string aexp8 ^" ==>  result  =  " ^ string_of_int(result) ^ "\n");;
 
 
-type prog =
-  Var of string
-  | Affect
+(*-------------------------------------------------------------------------------------------- *)
+(*Aymen *)
+(* 1.2 Les expressions booléennes : Doing *)
+
+(* Q1  Définition du type*)
+
+type bexp =
+  Vrai
+  | Faux
+  | Var of string
+  | Bool of bool
+  | Et of bexp*bexp
+  | Ou of bexp*bexp
+  | Non of bexp
+  | Equal of aexp*aexp
+  | EqualOrInf of aexp*aexp ;;
+
+(* Q2 Ecriture des expressions*)
+
+let exp1 = Vrai ;;
+let exp2 = Faux ;;
+let exp3 = Et(Vrai,Faux);;
+let exp4 = Non (Vrai);;
+let exp5 = Ou(Vrai,Faux);;
+
+let exp6 = Equal(Int 2, Int 4);;
+let exp7 = Equal(Plus(Int 3, Int 5), Mult(Int 2, Int 4));;
+let exp8 = Equal(Mult(Int 2, Var "x"), Plus(Var "y", Int 1));;
+
+let exp9 = EqualOrInf(Int 5, Int 7);;
+let exp10 = Et(EqualOrInf(Plus(Int 8, Int 9), Mult(Int 4, Int 5)),EqualOrInf(Plus(Int 3, Var "x"), Mult(Int 4, Var "y")));;
+
+(* Q3-1  Fonction bexp_to_string *)  
+let rec bexp_to_string exp = match exp with 
+| Vrai -> "vrai"
+| Faux -> "faux"
+| Var v -> v
+| Bool b -> if(b == true) then "vrai"
+            else "faux"
+| Et (first, second) ->  "(" ^ bexp_to_string first ^ " et " ^ bexp_to_string second ^ ")"
+| Ou (first, second) ->  "(" ^ bexp_to_string first ^ " ou " ^ bexp_to_string second ^ ")" 
+| Non  bexp -> "(" ^ bexp_to_string bexp ^ ")" 
+| Equal (first, second) ->  "(" ^ aexp_to_string first ^ " = " ^ aexp_to_string second ^ ")"
+| EqualOrInf (first, second) ->  "(" ^ aexp_to_string first ^ " <= " ^ aexp_to_string second ^ ")" ;;
+
+(*Q3-2 Ecriture des chaines *)
+
+print_string (" vrai  ==>  " ^ bexp_to_string exp1 ^ " \n");;
+print_string (" Faux  ==>  " ^ bexp_to_string exp2 ^ " \n");;
+print_string (" Et(Vrai,Faux)  ==>  " ^ bexp_to_string exp3 ^ " \n");;
+print_string (" Non (Vrai)  ==>  " ^ bexp_to_string exp4 ^ " \n");;
+print_string (" Ou(Vrai,Faux)  ==>  " ^ bexp_to_string exp5 ^ " \n");;
+print_string (" Equal(Int 2, Int 4)  ==>  " ^ bexp_to_string exp6 ^ " \n");;
+print_string (" Equal(Plus(Int 3, Int 5), Mult(Int 2, Int 4)) ==>  " ^ bexp_to_string exp7 ^ " \n");;
+print_string (" Equal(Mult(Int 2, Var 'x'), Plus(Var 'y', Int 1))  ==>  " ^ bexp_to_string exp8 ^ " \n");;
+print_string (" EqualOrInf(Int 5, Int 7)  ==>  " ^ bexp_to_string exp9 ^ " \n");;
+print_string (" Et(EqualOrInf(Plus(Int 8, Int 9), Mult(Int 4, Int 5)),EqualOrInf(Plus(Int 3, Var 'x'), Mult(Int 4, Var 'y')))  ==>  " ^ bexp_to_string exp10 ^ " \n");;
+
+(*-------------------------------------------------------------------------------------------- *)
+(*Islem *)
+
+(* 1.2 Les commandes du langage: Doing *)
