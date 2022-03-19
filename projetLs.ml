@@ -254,7 +254,7 @@ let rec exec prog varList = match prog with
 print_string("\n------------ partie 1.3) question7 : ------------\n");;
 
 (* Factorielle *)
-let progFactorielle = If_Else(EqualOrInf(Var "n", Int 0), Affect("result", Int 0),Sequence(Affect("result", Int 1),Repeat(Var "n",Sequence(Affect("result", Mult(Var "result", Var "n")),Affect("n", Sub(Var "n",Int 1)) ))) );;
+let progFactorielle = If_Else(EqualOrInf(Var "n", Int 0), Affect("result", Int 1),Sequence(Affect("result", Int 1),Repeat(Var "n",Sequence(Affect("result", Mult(Var "result", Var "n")),Affect("n", Sub(Var "n",Int 1)) ))) );;
 let varList=(Val ("n", 5))::[];;
 print_string("Factorielle ==>  " ^ (valuation_to_string varList));;
 let varListResult=exec progFactorielle varList ;;
