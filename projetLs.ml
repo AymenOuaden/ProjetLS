@@ -1,4 +1,3 @@
-
 (*   Les expressions arithmétiques *)
 print_string("\n----------------------------   Les expressions arithmétiques   ----------------------------\n");;
 (* Q1 *)
@@ -270,4 +269,152 @@ print_string("resultat = "^string_of_int(getVarValue "a" varListResult) ^ "\n");
 
 
 (*  Triplets de Hoare et validité *)
-print_string("\n----------------------------   Triplets de Hoare et validité   ----------------------------\n");;
+print_string("\n----------------------------   Triplets de Hoare et validité   ----------------------------\n \n");;
+
+(*  4.1 formules de la logiques des propositions  *)
+(*  Q1  *)
+type tprop =
+Vrai
+  | Faux
+  | Et of tprop*tprop
+  | Ou of tprop*tprop
+  | Non of tprop
+  | Equal of aexp*aexp
+  | EqualOrInf of aexp*aexp 
+  | Implique of tprop*tprop ;;
+
+(*  Q2  *)
+
+let tprop1 = Vrai;;
+let tprop2 = Et(Vrai,Faux);;
+let tprop3 = Non Vrai;;
+let tprop4 = Ou(Vrai,Faux);;
+let tprop5 = Implique(Faux,Ou(Vrai,Faux)) ;;
+
+let tprop6 =  Equal(Int 2,Int 4);;
+let tprop7 =  Equal(Plus(Int 3, Int 5),Mult(Int 2, Int 4));;
+let tprop8 =  Equal(Mult(Int 2, Var "x"),Plus(Var "y", Int 1));;
+
+let tprop9 = EqualOrInf(Plus(Int 3, Var "x") ,Mult(Int 4, Var "y"));;
+let tprop10 = Et(EqualOrInf(Int 5 ,Int 7 ),EqualOrInf(Plus( Int 8, Int 9 ) ,Mult(Int 4, Int 5)));;
+let tprop11 = Implique( Equal(Var "x",Int 1),EqualOrInf(Var "y",Int 0));;
+
+(*  Q3  *)
+(* Q3-1  Fonction bexp_to_string *) 
+let rec prop_to_string prop  = match prop with
+| Vrai -> "vrai"
+| Faux -> "faux"
+| Ou(first,second) -> "(" ^ prop_to_string first ^ " ou " ^ prop_to_string second ^ ")"
+| Et(first,second) -> "(" ^ prop_to_string first ^ " et " ^ prop_to_string second ^ ")"
+| Non  p -> "!(" ^ prop_to_string p ^ ")" 
+| Equal (first, second) ->  "(" ^ aexp_to_string first ^ " = " ^ aexp_to_string second ^ ")"
+| EqualOrInf (first, second) ->  "(" ^ aexp_to_string first ^ " <= " ^ aexp_to_string second ^ ")" 
+| Implique (first, second) -> "(" ^ prop_to_string first ^ " implique " ^ prop_to_string second ^ ")" ;;
+
+(*Q3-2 Ecriture des chaines *)
+print_string("\n------------ partie 4.1) question3 : ------------\n");;
+print_string (" vrai  ==>  " ^ prop_to_string tprop1 ^ " \n");;
+print_string (" Et(Vrai,Faux)  ==>  " ^ prop_to_string tprop2 ^ " \n");;
+print_string (" Non Vrai  ==>  " ^ prop_to_string tprop3 ^ " \n");;
+print_string (" Ou(Vrai,Faux)  ==>  " ^ prop_to_string tprop4 ^ " \n");;
+print_string (" Implique(Faux,Ou(Vrai,Faux))  ==>  " ^ prop_to_string tprop5 ^ " \n");;
+print_string (" Equal(Int 2,Int4)  ==>  " ^ prop_to_string tprop6 ^ " \n");;
+print_string (" Equal(Plus(Int 3, Int 5),Mult(Int 2, Int 4))  ==>  " ^ prop_to_string tprop7 ^ " \n");;
+print_string (" Equal(Mult(Int 4, Var x),Plus(Var y, Int 1))  ==>  " ^ prop_to_string tprop8 ^ " \n");;
+print_string (" EqualOrInf(Plus(Int 3, Var x) ,Mult(Int 4, Var y))  ==>  " ^ prop_to_string tprop9 ^ " \n");;
+print_string (" Et(EqualOrInf(Int 5 ,Int 7 ),EqualOrInf(Plus( Int 8, Int 9 ) ,Mult(Int 4, Int 5)))  ==>  " ^ prop_to_string tprop10 ^ " \n");;
+print_string (" Implique( Equal(Var x,Int 1),EqualOrInf(Var y,Int 0))  ==>  " ^ prop_to_string tprop11 ^ " \n");;
+
+
+(*  4.2 Interprétation  *)
+
+(*  Q4  *)
+
+let rec pinterp prop varList = match prop with 
+| Vrai -> true
+| Faux -> false
+| Ou(first,second) ->  pinterp first varList || pinterp second varList
+| Et(first,second) -> pinterp first varList && pinterp second varList
+| Non  p -> not (pinterp p varList) 
+| Equal (first, second) ->  ainterp first varList == ainterp second varList
+| EqualOrInf (first, second) ->  ainterp first varList <= ainterp second varList
+| Implique (first, second) -> not( pinterp first varList) || ( pinterp second varList)  ;;
+
+(*  Q5  *)
+print_string("\n------------ partie 1.4) question5 : ------------\n");;
+let varList=(Val ("x", 7))::(Val ("y", 3))::[];;
+let result = pinterp tprop1 varList ;;
+print_string("tprop1 ==> " ^string_of_bool(result)^"\n");;
+let result = pinterp tprop2 varList ;;
+print_string("tprop2 ==> " ^string_of_bool(result)^"\n");;
+let result = pinterp tprop3 varList ;;
+print_string("tprop3 ==> " ^string_of_bool(result)^"\n");;
+let result = pinterp tprop4 varList ;;
+print_string("tprop4 ==> " ^string_of_bool(result)^"\n");;
+let result = pinterp tprop5 varList ;;
+print_string("tprop5 ==> " ^string_of_bool(result)^"\n");;
+let result = pinterp tprop6 varList ;;
+print_string("tprop6 ==> " ^string_of_bool(result)^"\n");;
+let result = pinterp tprop7 varList ;;
+print_string("tprop7 ==> " ^string_of_bool(result)^"\n");;
+let result = pinterp tprop8 varList ;;
+print_string("tprop8 ==> " ^string_of_bool(result)^"\n");;
+let result = pinterp tprop9 varList ;;
+print_string("tprop9 ==> " ^string_of_bool(result)^"\n");;
+let result = pinterp tprop10 varList ;;
+print_string("tprop10 ==> " ^string_of_bool(result)^"\n");;
+let result = pinterp tprop11 varList ;;
+print_string("tprop11 ==> " ^string_of_bool(result)^"\n");;
+
+(*  4.3 Substitutions  *)
+(*  Q6  *)
+let rec psubst tprop var aexp =match tprop with 
+| Vrai -> Vrai
+| Faux -> Faux
+| Ou(first,second) ->Ou((psubst first var aexp ),(psubst second var aexp ))
+| Et(first,second) -> Et((psubst first var aexp ),(psubst second var aexp ))
+| Non tprop' -> Non (psubst tprop' var aexp )
+| Equal(first,second) -> Equal((asubst first var aexp ),(asubst second var aexp))
+| EqualOrInf(first,second) -> EqualOrInf ((asubst first var aexp ),(asubst second var aexp))
+| Implique(first,second) -> Implique((psubst first var aexp),(psubst second var aexp)) ;;
+
+(*  Q7  *)
+print_string("\n------------ partie 1.4.3) question7 : ------------\n");;
+let aexpX=Mult(Int 3, Var "y");;
+let aexpY=Plus(Var "k", Int 2);;
+
+let resultaexp = psubst tprop8 "x" aexpX ;;
+let resultaexp = psubst resultaexp "y" aexpY ;;
+print_string("formule logique 8 = "^prop_to_string tprop8 ^ " ==>  " ^ prop_to_string resultaexp ^ "\n");;
+let resultaexp = psubst tprop9 "x" aexpX ;;
+let resultaexp = psubst resultaexp "y" aexpY ;;
+print_string("formule logique 9 = "^prop_to_string tprop9 ^ " ==>  " ^ prop_to_string resultaexp ^ "\n");;
+let resultaexp = psubst tprop11 "x" aexpX ;;
+let resultaexp = psubst resultaexp "y" aexpY ;;
+print_string("formule logique 11 = "^prop_to_string tprop11 ^ " ==>  " ^ prop_to_string resultaexp ^ "\n");;
+
+
+(*  Les triplets de Hoare  *)
+print_string("\n----------------------------   Les triplets de Hoare   ----------------------------\n");;
+(*  Q8  *)
+type hoare_triple =
+Triplet of tprop*prog*tprop;;
+
+(*  Q9  *)
+let hoare_triple1 = Triplet( Equal(Var "x", Int 2), Skip, Equal( Var "x", Int 2));;
+let hoare_triple2 = Triplet( Equal(Var "x", Int 2), Affect("x", Int 3 ), EqualOrInf(Var "x", Int 3));;
+let hoare_triple3 = Triplet( Vrai, If_Else(EqualOrInf(Var "x", Int 0),  Affect("r", Sub(Int 0, Var "x")),Affect("r", Var "x")),EqualOrInf(Int 0, Var "r"));;
+let hoare_triple4 = Triplet( Et(Equal(Var "in",Int 5),Equal(Var "out", Int 1)),progFactorielle,Et(Equal(Var "in",Int 0),Equal(Var "out", Int 120)));;
+
+(*  Q10  *)
+let rec htvalid_test h_triple varList =match  h_triple with 
+| Triplet(prec,prog,postc) -> (pinterp prec varList) && (pinterp postc (exec prog varList ));;
+
+let varList=(Val ("x", 2))::(Val ("y", 3))::[];;
+print_string("result ==> " ^string_of_bool(htvalid_test hoare_triple1 varList )^"\n");;
+
+
+
+
+
+
