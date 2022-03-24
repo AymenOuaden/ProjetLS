@@ -33,7 +33,17 @@ let exp = Mult(Int 6,Plus(Var "x",Mult(Int 5,Mult(Var "y",Var "x"))));;
 let exp_toString = aexp_to_string exp ;;
 print_string (" Mult(Int 6,Plus(Var x,Mult(Int 5,Mult(Var y,Var x))))    ===>   " ^ exp_toString  ^ "\n" );;
 
-(* Q4 *) 
+(* Q4 *)
+
+(* 
+type valuation=
+Val of (string * int) list ;;
+
+let rec getVarValue var val = match val with 
+| Val ((nom,value)::val') ->  if ((compare nom var)== 0 ) then value  else getVarValue var Val(val')
+| Val([]) -> failwith "no matching variable found ";;
+ *)
+
 type valuation=
 Val of string * int ;;
 
@@ -274,42 +284,42 @@ print_string("\n----------------------------   Triplets de Hoare et validité   
 (*  4.1 formules de la logiques des propositions  *)
 (*  Q1  *)
 type tprop =
-Vrai
-  | Faux
-  | Et of tprop*tprop
-  | Ou of tprop*tprop
-  | Non of tprop
-  | Equal of aexp*aexp
-  | EqualOrInf of aexp*aexp 
-  | Implique of tprop*tprop  ;;
+Vraip
+  | Fauxp
+  | Etp of tprop*tprop
+  | Oup of tprop*tprop
+  | Nonp of tprop
+  | Equalp of aexp*aexp
+  | EqualOrInfp of aexp*aexp 
+  | Impliquep of tprop*tprop  ;;
 
 (*  Q2  *)
 
-let tprop1 = Vrai;;
-let tprop2 = Et(Vrai,Faux);;
-let tprop3 = Non Vrai;;
-let tprop4 = Ou(Vrai,Faux);;
-let tprop5 = Implique(Faux,Ou(Vrai,Faux)) ;;
+let tprop1 = Vraip;;
+let tprop2 = Etp(Vraip,Fauxp);;
+let tprop3 = Nonp Vraip;;
+let tprop4 = Oup(Vraip,Fauxp);;
+let tprop5 = Impliquep(Fauxp,Oup(Vraip,Fauxp)) ;;
 
-let tprop6 =  Equal(Int 2,Int 4);;
-let tprop7 =  Equal(Plus(Int 3, Int 5),Mult(Int 2, Int 4));;
-let tprop8 =  Equal(Mult(Int 2, Var "x"),Plus(Var "y", Int 1));;
+let tprop6 =  Equalp(Int 2,Int 4);;
+let tprop7 =  Equalp(Plus(Int 3, Int 5),Mult(Int 2, Int 4));;
+let tprop8 =  Equalp(Mult(Int 2, Var "x"),Plus(Var "y", Int 1));;
 
-let tprop9 = EqualOrInf(Plus(Int 3, Var "x") ,Mult(Int 4, Var "y"));;
-let tprop10 = Et(EqualOrInf(Int 5 ,Int 7 ),EqualOrInf(Plus( Int 8, Int 9 ) ,Mult(Int 4, Int 5)));;
-let tprop11 = Implique( Equal(Var "x",Int 1),EqualOrInf(Var "y",Int 0));;
+let tprop9 = EqualOrInfp(Plus(Int 3, Var "x") ,Mult(Int 4, Var "y"));;
+let tprop10 = Etp(EqualOrInfp(Int 5 ,Int 7 ),EqualOrInfp(Plus( Int 8, Int 9 ) ,Mult(Int 4, Int 5)));;
+let tprop11 = Impliquep( Equalp(Var "x",Int 1),EqualOrInfp(Var "y",Int 0));;
 
 (*  Q3  *)
 (* Q3-1  Fonction bexp_to_string *) 
 let rec prop_to_string prop  = match prop with
-| Vrai -> "vrai"
-| Faux -> "faux"
-| Ou(first,second) -> "(" ^ prop_to_string first ^ " ou " ^ prop_to_string second ^ ")"
-| Et(first,second) -> "(" ^ prop_to_string first ^ " et " ^ prop_to_string second ^ ")"
-| Non  p -> "!(" ^ prop_to_string p ^ ")" 
-| Equal (first, second) ->  "(" ^ aexp_to_string first ^ " = " ^ aexp_to_string second ^ ")"
-| EqualOrInf (first, second) ->  "(" ^ aexp_to_string first ^ " <= " ^ aexp_to_string second ^ ")" 
-| Implique (first, second) -> "(" ^ prop_to_string first ^ " implique " ^ prop_to_string second ^ ")" ;;
+| Vraip -> "vrai"
+| Fauxp -> "faux"
+| Oup(first,second) -> "(" ^ prop_to_string first ^ " ou " ^ prop_to_string second ^ ")"
+| Etp(first,second) -> "(" ^ prop_to_string first ^ " et " ^ prop_to_string second ^ ")"
+| Nonp  p -> "!(" ^ prop_to_string p ^ ")" 
+| Equalp (first, second) ->  "(" ^ aexp_to_string first ^ " = " ^ aexp_to_string second ^ ")"
+| EqualOrInfp (first, second) ->  "(" ^ aexp_to_string first ^ " <= " ^ aexp_to_string second ^ ")" 
+| Impliquep (first, second) -> "(" ^ prop_to_string first ^ " implique " ^ prop_to_string second ^ ")" ;;
 
 (*Q3-2 Ecriture des chaines *)
 print_string("\n------------ partie 4.1) question3 : ------------\n");;
@@ -331,14 +341,14 @@ print_string (" Implique( Equal(Var x,Int 1),EqualOrInf(Var y,Int 0))  ==>  " ^ 
 (*  Q4  *)
 
 let rec pinterp prop varList = match prop with 
-| Vrai -> true
-| Faux -> false
-| Ou(first,second) ->  pinterp first varList || pinterp second varList
-| Et(first,second) -> pinterp first varList && pinterp second varList
-| Non  p -> not (pinterp p varList) 
-| Equal (first, second) ->  ainterp first varList == ainterp second varList
-| EqualOrInf (first, second) ->  ainterp first varList <= ainterp second varList
-| Implique (first, second) -> not( pinterp first varList) || ( pinterp second varList)  ;;
+| Vraip -> true
+| Fauxp -> false
+| Oup(first,second) ->  pinterp first varList || pinterp second varList
+| Etp(first,second) -> pinterp first varList && pinterp second varList
+| Nonp  p -> not (pinterp p varList) 
+| Equalp (first, second) ->  ainterp first varList == ainterp second varList
+| EqualOrInfp (first, second) ->  ainterp first varList <= ainterp second varList
+| Impliquep (first, second) -> not( pinterp first varList) || ( pinterp second varList)  ;;
 
 (*  Q5  *)
 print_string("\n------------ partie 1.4) question5 : ------------\n");;
@@ -369,14 +379,14 @@ print_string("tprop11 ==> " ^string_of_bool(result)^"\n");;
 (*  4.3 Substitutions  *)
 (*  Q6  *)
 let rec psubst tprop var aexp =match tprop with 
-| Vrai -> Vrai
-| Faux -> Faux
-| Ou(first,second) ->Ou((psubst first var aexp ),(psubst second var aexp ))
-| Et(first,second) -> Et((psubst first var aexp ),(psubst second var aexp ))
-| Non tprop' -> Non (psubst tprop' var aexp )
-| Equal(first,second) -> Equal((asubst first var aexp ),(asubst second var aexp))
-| EqualOrInf(first,second) -> EqualOrInf ((asubst first var aexp ),(asubst second var aexp))
-| Implique(first,second) -> Implique((psubst first var aexp),(psubst second var aexp)) ;;
+| Vraip -> Vraip
+| Fauxp -> Fauxp
+| Oup(first,second) ->Oup((psubst first var aexp ),(psubst second var aexp ))
+| Etp(first,second) -> Etp((psubst first var aexp ),(psubst second var aexp ))
+| Nonp tprop' -> Nonp (psubst tprop' var aexp )
+| Equalp(first,second) -> Equalp((asubst first var aexp ),(asubst second var aexp))
+| EqualOrInfp(first,second) -> EqualOrInfp ((asubst first var aexp ),(asubst second var aexp))
+| Impliquep(first,second) -> Impliquep((psubst first var aexp),(psubst second var aexp)) ;;
 
 
 (*  Q7  *)
@@ -402,10 +412,10 @@ type hoare_triple =
 Triplet of tprop*prog*tprop;;
 
 (*  Q9  *)
-let hoare_triple1 = Triplet( Equal(Var "x", Int 2), Skip, Equal( Var "x", Int 2));;
-let hoare_triple2 = Triplet( Equal(Var "x", Int 2), Affect("x", Int 3 ), EqualOrInf(Var "x", Int 3));;
-let hoare_triple3 = Triplet( Vrai, If_Else(EqualOrInf(Var "x", Int 0),  Affect("r", Sub(Int 0, Var "x")),Affect("r", Var "x")),EqualOrInf(Int 0, Var "r"));;
-let hoare_triple4 = Triplet( Et(Equal(Var "in",Int 5),Equal(Var "out", Int 1)),progFactorielle,Et(Equal(Var "in",Int 0),Equal(Var "out", Int 120)));;
+let hoare_triple1 = Triplet( Equalp(Var "x", Int 2), Skip, Equalp( Var "x", Int 2));;
+let hoare_triple2 = Triplet( Equalp(Var "x", Int 2), Affect("x", Int 3 ), EqualOrInfp(Var "x", Int 3));;
+let hoare_triple3 = Triplet( Vraip, If_Else(EqualOrInf(Var "x", Int 0),  Affect("r", Sub(Int 0, Var "x")),Affect("r", Var "x")),EqualOrInfp(Int 0, Var "r"));;
+let hoare_triple4 = Triplet( Etp(Equalp(Var "in",Int 5),Equalp(Var "out", Int 1)),progFactorielle,Etp(Equalp(Var "in",Int 0),Equalp(Var "out", Int 120)));;
 
 (*  Q10  *)
 let rec htvalid_test h_triple varList =match  h_triple with 
@@ -432,12 +442,12 @@ type goal =
 |Goal of  context*conclusion;;
 
 (*  Q1  *)
-let p :tprop = Vrai;;
-let q :tprop = Faux;;
-let r :tprop = Vrai;;
+let p :tprop = Vraip;;
+let q :tprop = Fauxp;;
+let r :tprop = Vraip;;
 
-let goal1 = Goal(Context([("H",Implique(Ou(p,q),r));("H2",p)]),ConclusionProp(Ou(p,q)));;
-let goal2 = Goal(Context [], ConclusionHoare(Triplet( Equal(Var "x", Int (-3)), If_Else(EqualOrInf(Var "x", Int 0),  Affect("x", Sub(Int 0, Var "x")),Affect("x", Var "x")),Equal(Var "x", Int 3))));;
+let goal1 = Goal(Context([("H",Impliquep(Oup(p,q),r));("H2",p)]),ConclusionProp(Oup(p,q)));;
+let goal2 = Goal(Context [], ConclusionHoare(Triplet( Equalp(Var "x", Int (-3)), If_Else(EqualOrInf(Var "x", Int 0),  Affect("x", Sub(Int 0, Var "x")),Affect("x", Var "x")),Equalp(Var "x", Int 3))));;
 
 
 (*  Q3  *)
@@ -462,8 +472,12 @@ print_string(print_goal goal2);;
 
 
 let fresh_ident =
-let prefix = " H " and count = ref 0
-in function () -> ( count := ! count + 1 );
+      let prefix = " H " and count = ref 0
+      in
+      function () -> ( count := ! count + 1 ;
+      prefix ^ ( string_of_int (! count )))
+  ;;
+
 
 
 (*  Q4  *)
@@ -487,19 +501,19 @@ type tactic =
   | Or_Intro_2
   | Impl_Intro
   | Not_Intro
-  |And_Elim_1 of string
-  |And_Elim_2 of string 
-  |Or_Elim of string 
-  |Impl_Elim of string
-  |Not_Elim of string*string
-  |Exact of string 
-  |Assume of tprop
-  |HSkip 
-  |HAssign
-  |HIf
-  |HRepeat of string 
-  |HCons of tprop*tprop
-  |HSEq of tprop*tprop;;
+  | And_Elim_1 of string
+  | And_Elim_2 of string 
+  | Or_Elim of string 
+  | Impl_Elim of string*string
+  | Not_Elim of string*string
+  | Exact of string 
+  | Assume of tprop
+  | HSkip 
+  | HAssign
+  | HIf
+  | HRepeat of string 
+  | HCons of tprop*tprop
+  | HSEq of tprop*tprop;;
 
 (*   Appliquer une tactique à un but  *)
  
@@ -511,3 +525,66 @@ type tactic =
 
  
 (* Q2 *)
+
+let add_prop_to_context prop context = match context with
+|Context ([]) -> Context( [( fresh_ident () , prop )] )
+|Context (listContext) -> Context (listContext@[( fresh_ident () , prop )]) ;;
+
+let rec get_prop_from_context name context = match context with 
+|Context ([]) -> failwith "name not found in Hypothesis"
+|Context ((name',prop)::listContext) -> if ((compare name' name)== 0 ) then prop else get_prop_from_context name (Context listContext)  ;;
+
+let rec replace_prop_in_context old_prop_name new_prop context = match context with
+|Context ([]) -> failwith "name not found in Hypothesis"
+|Context ((name,prop)::listContext) ->  if ((compare old_prop_name name)== 0 ) then Context([(name,new_prop)]) 
+                                        else ( let c=(replace_prop_in_context old_prop_name new_prop (Context listContext) ) in (match c with 
+|Context context -> Context ((name,prop)::context)
+ ) );;
+
+
+let apply_prop_tactic context prop tactic = match tactic with
+|And_Intro ->( match prop with 
+              | Etp(prop1,prop2) -> [(Goal(context,ConclusionProp(prop2)));(Goal(context,ConclusionProp(prop2)))]
+              | _ -> failwith "Goal is not an And-formula" )
+|Or_Intro_1 -> ( match prop with 
+              | Oup(prop1,prop2) -> [(Goal(context,ConclusionProp(prop1)))]
+              | _ -> failwith "Goal is not an Or-formula" )
+|Or_Intro_2 -> ( match prop with 
+              | Oup(prop1,prop2) -> [(Goal(context,ConclusionProp(prop2)))]
+              | _ -> failwith "Goal is not an Or-formula" )
+|Impl_Intro -> ( match prop with 
+              | Impliquep(prop1,prop2) -> [Goal(add_prop_to_context prop1 context ,ConclusionProp(prop2)  )]
+              | _ -> failwith "Goal is not an Implication-formula" )
+        
+|Not_Intro -> ( match prop with 
+              | Nonp prop1 -> [Goal(add_prop_to_context prop1 context ,ConclusionProp(Fauxp)  )]
+              | _ -> failwith "Goal is not a Not-formula" )
+|And_Elim_1 name -> ( match (get_prop_from_context name context) with 
+                     | Etp (prop1,prop2) -> [Goal(add_prop_to_context prop1 context ,ConclusionProp(prop)  )]
+                     | _ -> failwith "Hypothesis is not an And-formula" ) 
+|And_Elim_2 name -> ( match (get_prop_from_context name context) with 
+                     | Etp (prop1,prop2) -> [Goal(add_prop_to_context prop2 context ,ConclusionProp(prop)  )]
+                     | _ -> failwith "Hypothesis is not an And-formula" )           
+|Or_Elim name -> ( match (get_prop_from_context name context) with 
+                     | Oup (prop1,prop2) ->  [(Goal((replace_prop_in_context name prop1 context),ConclusionProp(prop)));(Goal((replace_prop_in_context name prop2 context),ConclusionProp(prop)))]
+                     | _ -> failwith "Hypothesis is not an Or-formula" )       
+|Impl_Elim (name1,name2) ->( match  (get_prop_from_context name1 context) with
+                     |Impliquep(leftPart,rightPart) -> if ((leftPart)=(get_prop_from_context name2 context)) then [Goal(add_prop_to_context rightPart context ,ConclusionProp(prop)  )]
+                                                                                                             else failwith "Second hypothesis does not match the assumption of the first hypothesis"
+                     | _ -> failwith "First hypothesis is not an Implication-formula" )  
+|Not_Elim (name1,name2) ->( match  (get_prop_from_context name1 context) with
+                     |Nonp(prop1) -> if ((prop1)=(get_prop_from_context name2 context)) then [Goal(add_prop_to_context Fauxp context ,ConclusionProp(prop)  )]
+                                                                                                             else failwith "Second hypothesis does not match the assumption of the first hypothesis"
+                     | _ -> failwith "First hypothesis is not an Not-formula" )  
+|Exact name -> if((get_prop_from_context name context)=prop) then [] else failwith "can not apply the goal";;
+
+let apply_hoare_tactic context prop tactic = match tactic with
+|HSkip -> [Goal(context,ConclusionHoare(prop))]
+| _ -> [Goal(context,ConclusionHoare(prop))] ;;
+
+let rec apply_tactic goals tactic= match goals with 
+|Goal(context,conclusion)::goalList' ->match conclusion with 
+                                       | ConclusionProp prop ->  (apply_prop_tactic context prop  tactic) @ goalList'
+                                       | ConclusionHoare hoare_triple -> (apply_hoare_tactic context hoare_triple tactic) @ goalList' ;;
+
+  
