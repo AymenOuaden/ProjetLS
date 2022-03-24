@@ -281,7 +281,7 @@ Vrai
   | Non of tprop
   | Equal of aexp*aexp
   | EqualOrInf of aexp*aexp 
-  | Implique of tprop*tprop ;;
+  | Implique of tprop*tprop  ;;
 
 (*  Q2  *)
 
@@ -378,6 +378,7 @@ let rec psubst tprop var aexp =match tprop with
 | EqualOrInf(first,second) -> EqualOrInf ((asubst first var aexp ),(asubst second var aexp))
 | Implique(first,second) -> Implique((psubst first var aexp),(psubst second var aexp)) ;;
 
+
 (*  Q7  *)
 print_string("\n------------ partie 1.4.3) question7 : ------------\n");;
 let aexpX=Mult(Int 3, Var "y");;
@@ -415,6 +416,98 @@ print_string("result ==> " ^string_of_bool(htvalid_test hoare_triple1 varList )^
 
 
 
+(*  Un (mini) prouveur en logique de Hoare *)
+print_string("\n----------------------------   Un (mini) prouveur en logique de Hoare  ----------------------------\n \n");;
+
+(*  Les buts de preuves et le langage des tactiques *)
+(*  Q1  *)
+type context=
+Context of (string*tprop) list;;
+
+type conclusion =
+ ConclusionProp of tprop 
+| ConclusionHoare of hoare_triple;;
+
+type goal =
+|Goal of  context*conclusion;;
+
+(*  Q1  *)
+let p :tprop = Vrai;;
+let q :tprop = Faux;;
+let r :tprop = Vrai;;
+
+let goal1 = Goal(Context([("H",Implique(Ou(p,q),r));("H2",p)]),ConclusionProp(Ou(p,q)));;
+let goal2 = Goal(Context [], ConclusionHoare(Triplet( Equal(Var "x", Int (-3)), If_Else(EqualOrInf(Var "x", Int 0),  Affect("x", Sub(Int 0, Var "x")),Affect("x", Var "x")),Equal(Var "x", Int 3))));;
+
+
+(*  Q3  *)
+
+let print_hoare_triple hoare_triple = match hoare_triple with 
+ Triplet(pre, prog, post) -> "{ " ^ prop_to_string(pre)^" }\n "^prog_to_string(prog)^"{ "^prop_to_string(post)^" }\n";;
+
+let rec print_context context_exp = match context_exp with 
+|Context [] -> "============== \n"
+|Context ( (name,prop)::rest ) -> name ^ " : " ^ (prop_to_string prop) ^ "\n" ^ print_context (Context rest)
+
+let print_conclusion conclusion_exp =  match conclusion_exp with
+|ConclusionProp prop -> prop_to_string prop 
+|ConclusionHoare hoare -> print_hoare_triple hoare ;;
+
+let print_goal goal_exp = match goal_exp with
+|Goal(context,conclusion) -> print_context context  ^ print_conclusion conclusion ^ "\n \n" ;;               
+
+print_string("\n------------ partie 2.1.1) question3 : ------------\n");;
+print_string(print_goal goal1);;
+print_string(print_goal goal2);;
+
+
+let fresh_ident =
+let prefix = " H " and count = ref 0
+in function () -> ( count := ! count + 1 );
+
+
+(*  Q4  *)
+
+
+(* normalement kayan la solution ta3hom fi github nverifyiw berk ida s7i7a 
+   machi des fonction hado qst reponse *)
+
+
+(*  Q5  *)
+
+
+(* normalement kayan la solution ta3hom fi github nverifyiw berk ida s7i7a 
+   machi des fonction hado qst reponse *)
+
+
+(*  Q6  *)
+type tactic =
+  And_Intro
+  | Or_Intro_1
+  | Or_Intro_2
+  | Impl_Intro
+  | Not_Intro
+  |And_Elim_1 of string
+  |And_Elim_2 of string 
+  |Or_Elim of string 
+  |Impl_Elim of string
+  |Not_Elim of string*string
+  |Exact of string 
+  |Assume of tprop
+  |HSkip 
+  |HAssign
+  |HIf
+  |HRepeat of string 
+  |HCons of tprop*tprop
+  |HSEq of tprop*tprop;;
+
+(*   Appliquer une tactique à un but  *)
+ 
+(* Q1 *)
 
 
 
+
+
+ 
+(* Q2 *)
