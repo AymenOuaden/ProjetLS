@@ -441,7 +441,7 @@ type conclusion =
 type goal =
 |Goal of  context*conclusion;;
 
-(*  Q1  *)
+(*  Q2  *)
 let p :tprop = Vraip;;
 let q :tprop = Fauxp;;
 let r :tprop = Vraip;;
@@ -472,7 +472,7 @@ print_string(print_goal goal2);;
 
 
 let fresh_ident =
-      let prefix = " H " and count = ref 0
+      let prefix = "H" and count = ref 0
       in
       function () -> ( count := ! count + 1 ;
       prefix ^ ( string_of_int (! count )))
@@ -508,6 +508,7 @@ type tactic =
   | Not_Elim of string*string
   | Exact of string 
   | Assume of tprop
+  | Admit
   | HSkip 
   | HAssign
   | HIf
@@ -519,8 +520,14 @@ type tactic =
  
 (* Q1 *)
 
-
-
+let rec bool2prop bexp = match bexp with 
+Vrai -> Vraip
+| Faux -> Fauxp
+| Et (left_argument, right_argument) ->  Etp ((bool2prop left_argument), (bool2prop right_argument))
+| Ou (left_argument, right_argument) ->    Oup ((bool2prop left_argument), (bool2prop right_argument))
+| Non  exp -> Nonp (bool2prop exp)
+| Equal (left_argument, right_argument) ->   Equalp (left_argument, right_argument)
+| EqualOrInf (left_argument, right_argument) -> EqualOrInfp (left_argument, right_argument) ;;  
 
 
  
@@ -544,7 +551,7 @@ let rec replace_prop_in_context old_prop_name new_prop context = match context w
 
 let apply_prop_tactic context prop tactic = match tactic with
 |And_Intro ->( match prop with 
-              | Etp(prop1,prop2) -> [(Goal(context,ConclusionProp(prop2)));(Goal(context,ConclusionProp(prop2)))]
+              | Etp(prop1,prop2) -> [(Goal(context,ConclusionProp(prop1)));(Goal(context,ConclusionProp(prop2)))]
               | _ -> failwith "Goal is not an And-formula" )
 |Or_Intro_1 -> ( match prop with 
               | Oup(prop1,prop2) -> [(Goal(context,ConclusionProp(prop1)))]
@@ -576,15 +583,109 @@ let apply_prop_tactic context prop tactic = match tactic with
                      |Nonp(prop1) -> if ((prop1)=(get_prop_from_context name2 context)) then [Goal(add_prop_to_context Fauxp context ,ConclusionProp(prop)  )]
                                                                                                              else failwith "Second hypothesis does not match the assumption of the first hypothesis"
                      | _ -> failwith "First hypothesis is not an Not-formula" )  
-|Exact name -> if((get_prop_from_context name context)=prop) then [] else failwith "can not apply the goal";;
+|Exact name -> if((get_prop_from_context name context)=prop) then [] else failwith "can not apply the goal"
+|Assume prop1 -> [Goal(add_prop_to_context prop1 context ,ConclusionProp(prop));Goal(context ,ConclusionProp(prop1))];;
+
 
 let apply_hoare_tactic context prop tactic = match tactic with
 |HSkip -> [Goal(context,ConclusionHoare(prop))]
 | _ -> [Goal(context,ConclusionHoare(prop))] ;;
 
-let rec apply_tactic goals tactic= match goals with 
-|Goal(context,conclusion)::goalList' ->match conclusion with 
-                                       | ConclusionProp prop ->  (apply_prop_tactic context prop  tactic) @ goalList'
-                                       | ConclusionHoare hoare_triple -> (apply_hoare_tactic context hoare_triple tactic) @ goalList' ;;
 
+let rec apply_tactic goals tactic= match goals with 
+|Goal(context,conclusion)::goalList' ->(match conclusion with 
+                                       | ConclusionProp prop ->  (apply_prop_tactic context prop  tactic) @ goalList'
+                                       | ConclusionHoare hoare_triple -> (apply_hoare_tactic context hoare_triple tactic) @ goalList' );;
   
+(* Q3 *)
+
+let p :tprop = Vraip;;
+let q :tprop = Fauxp;;
+let r :tprop = Vraip;;
+
+print_string("\n----------------------------------  2.2.1 La logique des propositions  ----------------------------\n");;
+
+
+let rec print_goals goals gloalnumber = match  goals with 
+| [] -> " no more subgoals \n"
+| [Goal(context,conclusion)] -> "subgoals "^ (string_of_int  gloalnumber) ^ " \n"  ^ print_goal (Goal(context,conclusion)) ^ " \n"
+| Goal(context,conclusion)::goals' -> "subgoals "^ (string_of_int  gloalnumber) ^ " \n" ^ print_goal (Goal(context,conclusion)) ^ " \n" ^ (print_goals goals' (gloalnumber+1) ) ;;
+
+
+let formule=Impliquep(Impliquep(Oup( p,q ) ,r ) ,Etp(Impliquep(p ,r ) ,Impliquep(q,r) ));;
+let goalr=[Goal(Context([]),ConclusionProp(formule))];;
+
+
+print_string("\n--------------------------------------------------------------\n");;
+print_string(print_goals goalr 1);;
+print_string("--------------------------------------------------------------\n");;
+
+let goalr = apply_tactic goalr Impl_Intro;;
+print_string("\n-----------------------------Impl_Intro-----------------------\n");;
+print_string(print_goals goalr 1);;
+print_string("--------------------------------------------------------------\n");;
+
+let goalr = apply_tactic goalr And_Intro;;
+print_string("\n------------------------------And_Intro-----------------------\n");;
+print_string(print_goals goalr 1);;
+print_string("--------------------------------------------------------------\n");;
+
+let goalr = apply_tactic goalr Impl_Intro;;
+print_string("\n-----------------------------Impl_Intro-----------------------\n");;
+print_string(print_goals goalr 1);;
+print_string("--------------------------------------------------------------\n");;
+
+let goalr = apply_tactic goalr (Assume (Oup(p,q)));;
+print_string("\n-----------------------------Assume-----------------------\n");;
+print_string(print_goals goalr 1);;
+print_string("--------------------------------------------------------------\n");;
+
+let goalr = apply_tactic goalr (Impl_Elim ("H1","H3") );;
+print_string("\n-----------------------------Impl_Elim H1 and H3-----------------------\n");;
+print_string(print_goals goalr 1);;
+print_string("--------------------------------------------------------------\n");;
+
+let goalr = apply_tactic goalr (Exact "H4");;
+print_string("\n-----------------------------Exact H4-----------------------\n");;
+print_string(print_goals goalr 1);;
+print_string("--------------------------------------------------------------\n");;
+ 
+let goalr = apply_tactic goalr (Or_Intro_1);;
+print_string("\n----------------------------- Or_Intro_1-----------------------\n");;
+print_string(print_goals goalr 1);;
+print_string("--------------------------------------------------------------\n");; 
+
+let goalr = apply_tactic goalr (Exact "H2");;
+print_string("\n-----------------------------Exact H2-----------------------\n");;
+print_string(print_goals goalr 1);;
+print_string("--------------------------------------------------------------\n");;
+
+let goalr = apply_tactic goalr (Impl_Intro);;
+print_string("\n-----------------------------Impl_Intro-----------------------\n");;
+print_string(print_goals goalr 1);;
+print_string("--------------------------------------------------------------\n");;
+
+let goalr = apply_tactic goalr (Assume (Oup(p,q)));;
+print_string("\n-----------------------------Assume-----------------------\n");;
+print_string(print_goals goalr 1);;
+print_string("--------------------------------------------------------------\n");;
+
+let goalr = apply_tactic goalr (Impl_Elim ("H1","H6") );;
+print_string("\n-----------------------------Impl_Elim H1 and H6-----------------------\n");;
+print_string(print_goals goalr 1);;
+print_string("--------------------------------------------------------------\n");;
+
+let goalr = apply_tactic goalr (Exact "H7");;
+print_string("\n-----------------------------Exact H4-----------------------\n");;
+print_string(print_goals goalr 1);;
+print_string("--------------------------------------------------------------\n");;
+
+let goalr = apply_tactic goalr (Or_Intro_2);;
+print_string("\n----------------------------- Or_Intro_2-----------------------\n");;
+print_string(print_goals goalr 1);;
+print_string("--------------------------------------------------------------\n");; 
+
+let goalr = apply_tactic goalr (Exact "H5");;
+print_string("\n-----------------------------Exact H1-----------------------\n");;
+print_string(print_goals goalr 1);;
+print_string("--------------------------------------------------------------\n");;
