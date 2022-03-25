@@ -34,24 +34,16 @@ let exp_toString = aexp_to_string exp ;;
 print_string (" Mult(Int 6,Plus(Var x,Mult(Int 5,Mult(Var y,Var x))))    ===>   " ^ exp_toString  ^ "\n" );;
 
 (* Q4 *)
-
-(* 
 type valuation=
 Val of (string * int) list ;;
 
-let rec getVarValue var val = match val with 
-| Val ((nom,value)::val') ->  if ((compare nom var)== 0 ) then value  else getVarValue var Val(val')
-| Val([]) -> failwith "no matching variable found ";;
- *)
-
-type valuation=
-Val of string * int ;;
-
 (* Q5 *) 
 
-let rec getVarValue var varList = match varList with 
-| Val (first,second) :: varList' ->  if ((compare first var)== 0 ) then second  else getVarValue var varList'
-| [] -> failwith "no matching variable found ";;
+let rec getVarValue var valuation = match valuation with 
+| Val ((name,value)::val') ->  if ((compare name var)== 0 ) then value  else getVarValue var (Val val')
+| Val([]) -> failwith "no matching variable found ";;
+
+ 
 
 let rec ainterp exp varList = match exp with 
 | Var var -> getVarValue var varList
@@ -62,7 +54,7 @@ let rec ainterp exp varList = match exp with
 
 (* Q6 *)
 print_string("\n------------ partie 1.1) question6 : ------------\n");;
-let varList=(Val ("x", 5))::(Val ("y", 9))::[];;
+let varList =Val([("x", 5);("y", 9)]);;
 let result = ainterp aexp1 varList ;;
 print_string("expresion1 = "^aexp_to_string aexp1 ^" ==>  result  =  " ^ string_of_int(result) ^ "\n");;
 let result = ainterp aexp2 varList ;;
@@ -168,7 +160,7 @@ Vrai -> true
 
 (*  Q5  *)
 print_string("\n------------ partie 1.2) question5 : ------------\n");;
-let varList=(Val ("x", 7))::(Val ("y", 3))::[];;
+let varList =Val([("x", 7);("y", 3)]);;
 let result = binterp bexp1 varList ;;
 print_string("bexp1 ==> " ^string_of_bool(result)^"\n");;
 let result = binterp bexp2 varList ;;
@@ -235,14 +227,17 @@ print_string("aplication de la fonction x+2 10 fois avec selfcompose et x=0  ==>
 
 (*  Q6  *)
 (* function to change the value of element in valuation by new value if is existing otherwise we add this variable to the list  *)
-let rec changeVarValue var newVal varList = match varList with 
-| Val (first,second) :: varList' ->  if ((compare first var)== 0 ) then Val(var,newVal)::varList' else Val (first,second)::(changeVarValue var newVal varList')
-| [] -> Val(var,newVal) ::[];;
+let rec changeVarValue var newValue valuation = match valuation with
+|Val ((name,value)::listValuation) ->  (if ((compare var name)== 0 ) then Val((name,newValue)::listValuation) 
+                                        else ( let c=(changeVarValue var newValue (Val listValuation) ) in 
+                                              ( match c with 
+                                                |Val valuation -> Val ((name,value)::valuation))))
+| Val ([]) -> Val([(var,newValue)]) ;;
 
 (* fonction that convert valuation to string  *)
-let rec valuation_to_string varList = match varList with 
-| Val (first,second) :: varList' -> first ^ " = " ^ string_of_int(second) ^ "  " ^ valuation_to_string varList'
-| [] -> "\n";;
+let rec valuation_to_string valuation = match valuation with 
+| Val ((nom,value)::val')  -> nom ^ " = " ^ string_of_int(value) ^ "  " ^ valuation_to_string (Val val')
+| Val([]) -> "\n";;
 
 
 (* we created this function instead of selfcompose function because we can't execute repeat loop using selfcompose function  *)
@@ -264,14 +259,14 @@ print_string("\n------------ partie 1.3) question7 : ------------\n");;
 
 (* Factorielle *)
 let progFactorielle = If_Else(EqualOrInf(Var "n", Int 0), Affect("result", Int 1),Sequence(Affect("result", Int 1),Repeat(Var "n",Sequence(Affect("result", Mult(Var "result", Var "n")),Affect("n", Sub(Var "n",Int 1)) ))) );;
-let varList=(Val ("n", 5))::[];;
+let varList=Val ([("n", 5)]);;
 print_string("Factorielle ==>  " ^ (valuation_to_string varList));;
 let varListResult=exec progFactorielle varList ;;
 print_string("resultat = "^string_of_int(getVarValue "result" varListResult) ^ "\n");;
 
 (* Fibonacci *)
 let progFibonacci = Sequence(Affect("a",Int 0), Sequence(Affect("b",Int 1) ,Repeat(Var "n", Sequence(Sequence(Affect("a'",Var "a") ,Affect("a",Var "b") ) , Affect("b",Plus(Var "a'", Var "b"))) ) ));;
-let varList=(Val ("n", 8))::[];;
+let varList=Val ([("n", 8)]);;
 print_string("Fibonacci ==>  " ^ (valuation_to_string varList));;
 let varListResult=exec progFibonacci varList ;;
 print_string("resultat = "^string_of_int(getVarValue "a" varListResult) ^ "\n");;
@@ -352,7 +347,7 @@ let rec pinterp prop varList = match prop with
 
 (*  Q5  *)
 print_string("\n------------ partie 1.4) question5 : ------------\n");;
-let varList=(Val ("x", 7))::(Val ("y", 3))::[];;
+let varList=Val ([("x", 7);("y", 3)]);;
 let result = pinterp tprop1 varList ;;
 print_string("tprop1 ==> " ^string_of_bool(result)^"\n");;
 let result = pinterp tprop2 varList ;;
@@ -421,7 +416,7 @@ let hoare_triple4 = Triplet( Etp(Equalp(Var "in",Int 5),Equalp(Var "out", Int 1)
 let rec htvalid_test h_triple varList =match  h_triple with 
 | Triplet(prec,prog,postc) -> (pinterp prec varList) && (pinterp postc (exec prog varList ));;
 
-let varList=(Val ("x", 2))::(Val ("y", 3))::[];;
+let varList=Val ([("x", 2);("y", 3)]);;
 print_string("result ==> " ^string_of_bool(htvalid_test hoare_triple1 varList )^"\n");;
 
 
@@ -543,9 +538,10 @@ let rec get_prop_from_context name context = match context with
 
 let rec replace_prop_in_context old_prop_name new_prop context = match context with
 |Context ([]) -> failwith "name not found in Hypothesis"
-|Context ((name,prop)::listContext) ->  if ((compare old_prop_name name)== 0 ) then Context([(name,new_prop)]) 
-                                        else ( let c=(replace_prop_in_context old_prop_name new_prop (Context listContext) ) in (match c with 
-|Context context -> Context ((name,prop)::context)
+|Context ((name,prop)::listContext) ->  if ((compare old_prop_name name)== 0 ) then Context((name,new_prop)::listContext) 
+                                        else ( let c=(replace_prop_in_context old_prop_name new_prop (Context listContext) ) in 
+                                        ( match c with 
+                                          |Context context -> Context ((name,prop)::context)
  ) );;
 
 
