@@ -676,7 +676,8 @@ let apply_hoare_tactic context prop tactic = match tactic with
 let rec apply_tactic goals tactic= match goals with 
 |Goal(context,conclusion)::goalList' ->(match conclusion with 
                                        | ConclusionProp prop ->  (apply_prop_tactic context prop  tactic) @ goalList'
-                                       | ConclusionHoare hoare_triple -> (apply_hoare_tactic context hoare_triple tactic) @ goalList' );;
+                                       | ConclusionHoare hoare_triple -> (apply_hoare_tactic context hoare_triple tactic) @ goalList' )
+|[] -> [] ;;
   
 (* Q3 :*)
 
@@ -685,7 +686,7 @@ let q :tprop = Fauxp;;
 let r :tprop = Vraip;;
 
 
-(*  Fonction qui convertit une listes des goals en chaîne *)
+(*  Fonction qui convertit une liste des goals en chaîne *)
 let rec print_goals goals gloalnumber = match  goals with 
 | [] -> " no more subgoals \n"
 | [Goal(context,conclusion)] -> "subgoals "^ (string_of_int  gloalnumber) ^ " \n"  ^ print_goal (Goal(context,conclusion)) ^ " \n"
