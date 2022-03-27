@@ -510,12 +510,12 @@ let goal2 = Goal(Context [], ConclusionHoare(Triplet( Equalp(Var "x", Int (-3)),
 let print_hoare_triple hoare_triple = match hoare_triple with 
  Triplet(pre, prog, post) -> "{ " ^ prop_to_string(pre)^" }\n "^prog_to_string(prog)^"{ "^prop_to_string(post)^" }\n";;
 
-(*  Fonction qui convertit context en chaîne *)
+(*  Fonction qui convertit le context en chaîne *)
 let rec print_context context_exp = match context_exp with 
 |Context [] -> "============== \n"
 |Context ( (name,prop)::rest ) -> name ^ " : " ^ (prop_to_string prop) ^ "\n" ^ print_context (Context rest)
 
-(*  Fonction qui convertit conclusion en chaîne *)
+(*  Fonction qui convertit la conclusion en chaîne *)
 let print_conclusion conclusion_exp =  match conclusion_exp with
 |ConclusionProp prop -> prop_to_string prop 
 |ConclusionHoare hoare -> print_hoare_triple hoare ;;
@@ -591,7 +591,7 @@ type tactic =
 
 print_string("\n  2.2 Appliquer une tactique à un but \n");;
  
-(* Q1: Fonction qui convertit une expresion boolean en expression propositionnelle *)
+(* Q1: Fonction qui convertit une expresion booléenne en expression propositionnelle *)
 
 let rec bool2prop bexp = match bexp with 
 Vrai -> Vraip
@@ -611,12 +611,12 @@ let add_prop_to_context prop context = match context with
 |Context ([]) -> Context( [( fresh_ident () , prop )] )
 |Context (listContext) -> Context (listContext@[( fresh_ident () , prop )]) ;;
 
-(* Fonction qui prend un contexte et un identifiant et renvoie une formule logique à partir de context si l'identifiant exist dans le context sinon une exception *)
+(* Fonction qui prend un contexte et un identifiant et renvoie une formule logique à partir du context si l'identifiant exist dans le context sinon une exception *)
 let rec get_prop_from_context name context = match context with 
 |Context ([]) -> failwith "name not found in Hypothesis"
 |Context ((name',prop)::listContext) -> if ((compare name' name)== 0 ) then prop else get_prop_from_context name (Context listContext)  ;;
 
-(* Fonction qui prend un contexte, un identifiant, une formule logique et renvoie un nouveu context on changant la formule logique lié à cette identifiant par une nouvelle formule logique 
+(* Fonction qui prend un contexte, un identifiant, une formule logique et renvoie un nouveu context en changant la formule logique liée à cet identifiant par une nouvelle formule logique 
    si l'identifiant exist dans le context sinon une exception *)
 let rec replace_prop_in_context old_prop_name new_prop context = match context with
 |Context ([]) -> failwith "name not found in Hypothesis"
@@ -627,7 +627,7 @@ let rec replace_prop_in_context old_prop_name new_prop context = match context w
  ) );;
 
 
-(* Fonction pour appliqué un tactic sur la  la partie logique des propositions *)
+(* Fonction pour appliquer une tactic sur la partie logique des propositions *)
 let apply_prop_tactic context prop tactic = match tactic with
 |And_Intro ->( match prop with 
               | Etp(prop1,prop2) -> [(Goal(context,ConclusionProp(prop1)));(Goal(context,ConclusionProp(prop2)))]
@@ -666,13 +666,13 @@ let apply_prop_tactic context prop tactic = match tactic with
 |Assume prop1 -> [Goal(add_prop_to_context prop1 context ,ConclusionProp(prop));Goal(context ,ConclusionProp(prop1))];;
 
 
-(* Fonction pour appliqué un tactic sur la  la partie logique de Hoare *)
+(* Fonction pour appliquer une tactic sur la partie logique de Hoare *)
 let apply_hoare_tactic context prop tactic = match tactic with
 |HSkip -> [Goal(context,ConclusionHoare(prop))]
 | _ -> [Goal(context,ConclusionHoare(prop))] ;;
 
 
-(* Fonction pour appliqué un tactic sur un goal *)
+(* Fonction pour appliquer une tactic sur un goal *)
 let rec apply_tactic goals tactic= match goals with 
 |Goal(context,conclusion)::goalList' ->(match conclusion with 
                                        | ConclusionProp prop ->  (apply_prop_tactic context prop  tactic) @ goalList'
