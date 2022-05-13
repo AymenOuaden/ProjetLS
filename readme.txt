@@ -2,39 +2,12 @@
 Projet Logiciels sûrs : Un interpréteur pour un langage impératif et un prouveur en logique de Hoare
 —Master Informatique, 1ière année, 2ème semestre, 2021-2022— 
 
-Réalisé par : Islem CHEKLAT - Aymen OUADEN - Abel AMOUH
+Réalisé par : Aymen OUADEN - Islem CHEKLAT - Abel AMOUH
 
 Language : OCAML
 
-
-Question 4 : L'arbre de preuve -----------------------------------------------------
-
-{(x = y + i - 1) /\ (i <= 10)} c {[i + 1/i](x = y + i - 1)}
------------------------------------------------------------- repeat(i)
-{[1/i](x = y + i - 1)} repeat 10 do c {(x = y + i - 1) /\ (i = 10 + 1)}
--------------------------------------------------------------------------------------
-
-
-Question 5 :  La preuve du triplet --------------------------------------------------
-{(r = 0) /\ (n = 1)} repeat 5 do r := r + n; n := n + 1 od {(r = 15) /\ (n = 6)}
-I = (r = i * (i-1) / 2) /\ (n = i)
-{(r = 0) /\ (n = 1)}
-{I}
-repeat 5 do 
-   {(r = i * (i-1) / 2) /\ (n = i) /\ i <= 5}
-   r := r + n; 
-   {(r + n = i * (i-1) / 2) /\ (n = i) /\ i <= 5}
-   n := n + 1 
-   {(r + n + 1 = i * (i-1) / 2) /\ (n + 1 = i) /\ i <= 5}
-od
-{(r = i * (i-1) / 2) /\ (n = i) /\ i = 5 + 1}
-{(r = 15) /\ (n = 6)}
----------------------------------------------------------------------------------------
-
 Remarques:
 *** Il faut lancer la commande Ocaml projetls.ml pour exécuter le programme.
-*** Tout le code est commenté.
-*** Voici quelques détails supplémentaires concernant le codage du projet: 
 
 Type valuation: c'est simplement une liste de (char * int). 
 Fonctions associés :
